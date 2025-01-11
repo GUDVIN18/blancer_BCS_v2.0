@@ -9,4 +9,9 @@ face_to_face_server0/media/
 *.png
 *.jpg
 *.log
-
+/root/project/balancer-v2.0/logs/django/
+/root/project/balancer-v2.0/logs/worker/
+/logs/django/
+/logs/worker/
+logs/worker/
+logs/django/
