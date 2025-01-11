@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Photo</title>
+    <style>
+        .preview-image {
+            max-width: 50%;
+            max-height: 50%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <h2>Generated Photo</h2>
+    <div>
+        {% if photo_url %}
+            <img id="generatedPhoto" src="{{ photo_url }}" alt="Generated photo" class="preview-image">
+        {% else %}
+            <p>Not Generated Photo</p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Upload</title>
+    <style>
+        .preview-container {
+            margin-top: 20px;
+            max-width: 1920px;
+            height: 1080px;
+            overflow: hidden;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+            object-fit: contain;
+        }
+        .loading {
+            display: none;
+            margin-top: 10px;
+        }
+        .success-message {
+            color: green;
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>Upload Your Photo</h2>
+    <form id="uploadForm" method="post" enctype="multipart/form-data" action="{% url 'upload_photo' %}">
+        {% csrf_token %}
+        <label for="photo">Choose a photo:</label>
+        <input type="file" id="photo" name="photo" accept="image/*" required><br><br>
+
+        <label for="gender">Select who will be in the photo:</label>
+        <select id="gender" name="gender" required>
+            <option value="Man">Man</option>
+            <option value="Woman">Woman</option>
+            <option value="Two-Man">Man-Man</option>
+            <option value="Two-Woman">Woman-Woman</option>
+            <option value="Man-Left-Woman-Right">Man (left), Woman (right)</option>
+            <option value="Woman-Left-Man-Right">Woman (left), Man (right)</option>
+            
+        </select><br><br>
+
+        <label for="style">Select style:</label>
+        <select id="style" name="style" required>
+            <option value="astronaut">Astronaut</option>
+            <option value="superhero">Superhero</option>
+            <option value="christmas">Christmas</option>
+            <option value="halloween">Halloween</option>
+        </select><br><br>
+
+        <button type="submit" id="submitButton">Submit</button>
+    </form>
+
+    <div id="successMessage" class="success-message">Success!</div>
+
+    <form id="checkPhotoForm" method="post">
+        {% csrf_token %}
+        <input type="hidden" id="taskIdInput" name="task_id" value="">
+        <br>
+        <button type="button" id="checkPhotoButton" disabled>Check Your Photo</button>
+    </form>
+
+    <script>
+        let checkInterval;
+    
+        // Обработка загрузки фото
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+    
+            // Блокируем кнопку перед отправкой
+            const checkButton = document.getElementById('checkPhotoButton');
+            checkButton.disabled = true;
+            checkButton.textContent = "Checking..."; // Меняем текст кнопки на "Проверка..."
+    
+            fetch("{% url 'upload_photo' %}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('taskIdInput').value = data.task_id;
+                document.getElementById('successMessage').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 5000);
+    
+                startCheckingPhotoStatus(data.task_id);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while uploading the photo.');
+            });
+        });
+    
+        // Функция для периодической проверки статуса фото
+        function startCheckingPhotoStatus(taskId) {
+            checkInterval = setInterval(() => {
+                fetch(`/task_complete_alert/${taskId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.photo_url) {
+                        const checkButton = document.getElementById('checkPhotoButton');
+                        checkButton.disabled = false;
+                        checkButton.textContent = "View Generated Photo";
+                        checkButton.onclick = () => {
+                            window.open(data.photo_url, '_blank');
+                        };
+                        clearInterval(checkInterval); // Останавливаем проверку, когда фото готово
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking photo status:', error);
+                });
+            }, 1000); // Проверка каждую секунду
+        }
+    </script>
+    
+</body>
+</html>

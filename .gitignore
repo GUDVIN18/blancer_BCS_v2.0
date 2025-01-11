@@ -1,0 +1,12 @@
+venv/
+/root/project/balancer-v2.0/face_to_face_server0/media
+face_to_face_server0/media
+/face_to_face_server0/media/
+face_to_face_server0/media/
+/media/
+venv/
+face_to_face_server0/media/
+*.png
+*.jpg
+*.log
+
